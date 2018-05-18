@@ -1,0 +1,99 @@
+body {
+    padding: 0px;
+    margin: 0px;
+
+}
+.row {
+    padding: 0px 5px 40px 5px;
+}
+
+.well {
+    min-height: 20px;
+    padding: 19px;
+    margin-bottom: 20px;
+    background-color: #1c1e22;
+    border: 1px solid #0c0d0e;
+    border-radius: 4px;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
+}
+
+.form-control {
+    background-color: #1c1e22;
+    border: 1px solid #0c0d0e;
+    border-radius: 4px;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
+    color: #c8c8c8;
+}
+
+.footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    height: 30px;
+    line-height: 30px;
+    background-color: #1c1e22;
+}
+
+
+
+.kodZrodlowy {
+    padding: 0px 60px;
+    text-align: left;
+}
+
+.imieNazwisko {
+    padding: 0px 60px;
+    text-align: right;
+}
+
+select {
+   margin: 0;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+select:invalid {
+    color: #7a8288;
+}
+
+select.dropdown {
+  background-image:
+    linear-gradient(45deg, transparent 50%, #5bc0de 50%),
+    linear-gradient(135deg, #5bc0de 50%, transparent 50%),
+    linear-gradient(to right, #1c1e22, #1c1e22);
+  background-position:
+    calc(100% - 20px) calc(1em + 2px),
+    calc(100% - 15px) calc(1em + 2px),
+    100% 0;
+  background-size:
+    5px 5px,
+    5px 5px,
+    2.5em 2.5em;
+  background-repeat: no-repeat;
+}
+
+select.dropdown:focus {
+  background-image:
+    linear-gradient(45deg, transparent 50%, #5bc0de 50%),
+    linear-gradient(135deg, #5bc0dee 50%, transparent 50%),
+    linear-gradient(to right, #1c1e22, #1c1e22);
+  background-position:
+    calc(100% - 20px) calc(1em + 2px),
+    calc(100% - 15px) calc(1em + 2px),
+    100% 0;
+  background-size:
+    5px 5px,
+    5px 5px,
+    2.5em 2.5em;
+  background-repeat: no-repeat;
+  border-color: grey;
+  outline: 0;
+}
+
+
+
