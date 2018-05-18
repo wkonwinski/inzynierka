@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, render_template, request
-# from WordsAndPartsGenerating import GenerateSentenceWaP
-# from WordsOnlyGenerating import GenerateSentenceWordOnly
-# from LettersGenerating import GenerateLetters
+from WordsAndPartsGenerating import GenerateSentenceWaP
+from WordsOnlyGenerating import GenerateSentenceWordOnly
+from LettersGenerating import GenerateLetters
 
 app = Flask(__name__)
 
@@ -20,9 +20,9 @@ def txtGen():
 
     lengthVal = int(lengthVal)
     tempVal = int(tempVal)
-    # resultWordsAndParts = GenerateSentenceWaP(seedVal, lengthVal, sourceVal)
-    # resultOnlyWords = GenerateSentenceWordOnly(seedVal, lengthVal, tempVal, sourceVal)
-    # resultLetters = GenerateLetters(seedVal, lengthVal, sourceVal)
+    resultWordsAndParts = GenerateSentenceWaP(seedVal, lengthVal, sourceVal)
+    resultOnlyWords = GenerateSentenceWordOnly(seedVal, lengthVal, tempVal, sourceVal)
+    resultLetters = GenerateLetters(seedVal, lengthVal, sourceVal)
 
     tmp = {
         'resultWoP': resultWordsAndParts,
