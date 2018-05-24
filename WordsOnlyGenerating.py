@@ -1,6 +1,5 @@
 import numpy as np
 import re
-import tensorflow as tf
 from keras.layers.recurrent import LSTM
 from keras.layers.embeddings import Embedding
 from keras.layers import Dense
@@ -9,29 +8,25 @@ from keras.optimizers import Adam
 from keras.preprocessing.sequence import pad_sequences
 from keras import backend as kerback
 
-def GenerateSentenceWordOnly(inputText, sentenceLength, temperature, seqLength, fileName):
+def GenerateSentenceWordOnly(inputText, sentenceLength, temperature, seqLen, fileName):
     pathResources = r'./OnlyWords/'
     pattern = re.compile("([a-zA-ZęóąśłńćźżĘÓĄŚŁŃĆŻŹ&0.,!?;:-]+|\n)")
     with open(pathResources + fileName + '_newIndexToWordTable.txt') as f:
         newIndexToWordTable = re.findall(pattern, f.read().lower())
 
-#    weightsForWordsInInputText = np.load(pathResources + fileName + '_weightsForWordsInInputText.npy')
-
     parameters = np.loadtxt(pathResources + fileName + '_parameters.txt', dtype = int)
     vocabSize = parameters[0]
     embeddingDim = parameters[1]
-
-
     
-    config = tf.ConfigProto()
-    config.gpu_options.allow_growth = True
-    kerback.tensorflow_backend.set_session(tf.Session(config = config))
+#    config = tf.ConfigProto()
+#    config.gpu_options.allow_growth = True
+#    kerback.tensorflow_backend.set_session(tf.Session(config = config))
     ######################## MODEL GENERUJACY SLOWA ##################
-    hiddenSize = 600
+    hiddenSize = 500
     learningRate = 0.001
           
     NNWordOnlyModel = Sequential()
-    NNWordOnlyModel.add(Embedding(input_dim = vocabSize, output_dim = embeddingDim, input_length = seqLength))
+    NNWordOnlyModel.add(Embedding(input_dim = vocabSize, output_dim = embeddingDim, input_length = seqLen))
     NNWordOnlyModel.add(LSTM(hiddenSize, return_sequences = True))
     NNWordOnlyModel.add(LSTM(hiddenSize, return_sequences = True))
     NNWordOnlyModel.add(LSTM(hiddenSize))  
@@ -41,7 +36,7 @@ def GenerateSentenceWordOnly(inputText, sentenceLength, temperature, seqLength, 
     NNWordOnlyModel.compile(loss = 'sparse_categorical_crossentropy', optimizer = optimizer, metrics = ['acc'])
     NNWordOnlyModel.load_weights(pathResources + fileName + '-words.hdf5')
 
-    output = Generate(inputText, sentenceLength, temperature, seqLength, vocabSize, newIndexToWordTable, NNWordOnlyModel)
+    output = Generate(inputText, sentenceLength, temperature, seqLen, vocabSize, newIndexToWordTable, NNWordOnlyModel)
     return output
 
 
@@ -70,22 +65,29 @@ def GetPredictions(predictions, temperature):
     return np.argmax(probabilities)
 
 
-def Generate(text, wordsNumber, temperature, seqLength, vocabSize, newIndexToWordTable, NNWordOnlyModel):
-    wordsIndexes = [Word2Index(word, vocabSize, newIndexToWordTable) for word in text.lower().split()]
+def Generate(text, wordsNumber, temperature, seqLen, vocabSize, newIndexToWordTable, NNWordOnlyModel):
+    wordsIndexes = []
+    for word in text.split(' '):
+        idx = Word2Index(word.lower(), vocabSize, newIndexToWordTable)
+        wordsIndexes.append(idx)
+        
     for i in range(0, wordsNumber):
-        reshapedArray = pad_sequences([wordsIndexes], maxlen = seqLength, padding = 'pre')
+        reshapedArray = pad_sequences([wordsIndexes], maxlen = seqLen, padding = 'pre')
         prediction = NNWordOnlyModel.predict(reshapedArray)
         index = GetPredictions(prediction[-1], temperature)
         wordsIndexes.append(index)
+    
+    kerback.clear_session()
+    del(NNWordOnlyModel)
     return ' '.join(Index2Word(idx, vocabSize, newIndexToWordTable) for idx in wordsIndexes)
 
 
-inputText = 'Chybaby nie wiedziała , co znaczy twarz blada'
-sentenceLength = 300
-temperature = 0
-fileName = 'Fraszki'
-seqLen = 30
-test = GenerateSentenceWordOnly(inputText, sentenceLength, temperature, seqLen, fileName)
+#text = 'Na pagórku niewielkim , we brzozowym gaju , \n Stał dwór szlachecki , z drzewa , lecz podmurowany ;'
+#sentenceLength = 200
+#temperature = 10
+#fileName = 'Pan_Tadeusz'
+#seqLen = 25
+#test = GenerateSentenceWordOnly(text, sentenceLength, temperature, seqLen, fileName)
 
 
 

@@ -23,7 +23,7 @@ def DrawPlot(fileName, modelType):
         title += 'słowach ze znakami interpunkcyjnymi itd.'
     elif modelType == 'WaPWords':
         title += 'tylko słowach'
-    elif modelType == 'historyWaPParts':
+    elif modelType == 'WaPParts':
         title += 'częciach mowy'
     
     
@@ -37,8 +37,8 @@ def DrawPlot(fileName, modelType):
     
     firstSubplot.plot(xAxes, plotData['acc'], label = "Training Data Accuracy", color = 'navy')
     firstSubplot.plot(xAxes, plotData['val_acc'], label = "Validation Data Accuracy", color = 'crimson', linestyle = '-.')
-    firstSubplot.set_title('Accuracy')
-    firstSubplot.legend(loc = 'center right', borderaxespad = 0.5)
+    firstSubplot.set_title('Accuracy', fontsize = 20)
+    firstSubplot.legend(loc = 'center right', borderaxespad = 0.5, fontsize = 20)
     firstSubplot.set_axisbelow(True)
     firstSubplot.minorticks_on()
     firstSubplot.grid(which='major', linestyle='-', linewidth='0.5', color='black')
@@ -48,8 +48,8 @@ def DrawPlot(fileName, modelType):
     
     secoundSubplot.plot(xAxes, plotData['loss'], label = "Training Data Loss", color = 'navy')
     secoundSubplot.plot(xAxes, plotData['val_loss'], label = "Validation Data Loss", color = 'crimson', linestyle = '-.')
-    secoundSubplot.set_title('Cost Function Value')
-    secoundSubplot.legend( loc = 'center right', borderaxespad = 0.5)
+    secoundSubplot.set_title('Cost Function Value', fontsize = 20)
+    secoundSubplot.legend( loc = 'center right', borderaxespad = 0.5, fontsize = 20)
     secoundSubplot.set_axisbelow(True)
     secoundSubplot.minorticks_on()
     secoundSubplot.grid(which='major', linestyle='-', linewidth='0.5', color='black')
@@ -58,8 +58,12 @@ def DrawPlot(fileName, modelType):
     
     f.show()
 
-fileName = 'Pan_Tadeusz'
-modelType = 'Letters'
+fileNames = ['Pan_Tadeusz', 'news', 'Wesele']
+modelTypes = ['Letters', 'WordsOnly', 'WaPWords', 'WaPParts']
 
-DrawPlot(fileName, modelType)
+for file in fileNames:
+    for model in modelTypes:
+        DrawPlot(file, model)
+
+
 

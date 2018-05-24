@@ -10,7 +10,7 @@ from keras.layers.embeddings import Embedding
 from keras.layers import Dense
 from keras.models import Sequential
 from keras import backend as kerback
-from keras.optimizers import Adam, Adagrad
+from keras.optimizers import Adam
 from keras.callbacks import ModelCheckpoint, History
 from keras.preprocessing.text import Tokenizer
 from keras.utils import to_categorical
@@ -24,7 +24,7 @@ session.mount('http://', adapter)
 urlHead = r'http://clarin.pelcra.pl/apt_pl/?sentences=["'
 urlTail = r'"]'
 
-fileName = 'Fraszki'
+fileName = 'Wesele'
 path = r'../SharedData/'
 modelWord2Vec = gensim.models.KeyedVectors.load_word2vec_format(path + 'nkjp+wiki-forms-all-100-skipg-hs.txt.gz') 
 embeddingDim = 100
@@ -115,12 +115,8 @@ for wordIndex in seqenceOfWordsConvertedToModelIndexes:
                 seqenceOfWordsConvertedToNewIndexes.append(i)
                 break
               
-#test = modelWord2Vec.index2word[309]
-#test2 = newIndexToWordTable[237]
-
-
 ######################## TWORZENIE ZESTAWU TRENINGOWEGO DLA MODELU UCZACEGO SIE SLOW #################
-wSeqLen = 15
+wSeqLen = 10
 trainingPairs = []
 for i in range(wSeqLen, len(seqenceOfWordsConvertedToNewIndexes)):
     trainingPairs.append(seqenceOfWordsConvertedToNewIndexes[i - wSeqLen:i + 1])
@@ -135,7 +131,7 @@ tokenizer = Tokenizer(filters='')
 tokenizer.fit_on_texts([dataPartOfSpeechAsString])
 partsOfSpeechNumber = len(tokenizer.word_index) + 1         
 
-pSeqLen = 25
+pSeqLen = 10
 trainingPairs = []
 for i in range(pSeqLen, len(dataPartOfSpeech)):
     tmpSeq = ' '.join(dataPartOfSpeech[i - pSeqLen:i + 1])
@@ -168,11 +164,10 @@ config.gpu_options.allow_growth = True
 kerback.tensorflow_backend.set_session(tf.Session(config = config))
 
 ######################## PARAMETRY SIECI ###########################
-hiddenSize = 800
-lstmDropout = 0.5
-learningRateAdam = 0.001
-learningRateAdagrad = 0.01
-batchSize = 256 
+hiddenSize = 500
+lstmDropout = 0.2
+learningRate = 0.001
+batchSize = 128 
 ######################## MODEL UCZACY SIĘ SŁÓW ##################      
 NNWordModel = Sequential()
 NNWordModel.add(Embedding(input_dim = vocabSize, output_dim = embeddingDim, weights = [weightsForWordsInInputText], trainable = False, input_length = wSeqLen))
@@ -182,14 +177,15 @@ NNWordModel.add(LSTM(hiddenSize, dropout = lstmDropout, recurrent_dropout = lstm
 NNWordModel.add(Dense(vocabSize, activation = 'softmax'))
 print(NNWordModel.summary())
 
-optimizer = Adagrad(lr = learningRateAdagrad)
-NNWordModel.compile(loss = 'categorical_crossentropy', optimizer = optimizer, metrics = ['acc'])
+optimizer = Adam(lr = learningRate)
+NNWordModel.compile(loss = 'sparse_categorical_crossentropy', optimizer = optimizer, metrics = ['accuracy'])
 
 filePath = r'./' + fileName + '-wap-words.hdf5'
-checkpoint = ModelCheckpoint(filePath, monitor = 'acc', verbose = 1, save_weights_only = True)
+checkpoint = ModelCheckpoint(filePath, monitor = 'val_loss', verbose = 1, save_weights_only = True)
 history = History()
 callbacksList = [checkpoint, history]
 
+NNWordModel.fit(trainXWord, trainYWord, batchSize, epochs = 1000, verbose = 2, validation_split = 0.1, callbacks = callbacksList, shuffle = True)
 
 def SaveHistory(history, fileName):
     with open(fileName + '_historyWaPWords.txt', 'wb') as f:
@@ -202,22 +198,22 @@ del(NNWordModel)
 ######################## MODEL UCZACY SIĘ STRUKTURY ZDANIA ##################
      
 NNPartOfSpeechModel = Sequential()
-NNPartOfSpeechModel.add(Embedding(input_dim = partsOfSpeechNumber, output_dim = 10, input_length = pSeqLen))
+NNPartOfSpeechModel.add(Embedding(input_dim = partsOfSpeechNumber, output_dim = partsOfSpeechNumber, input_length = pSeqLen, embeddings_initializer = 'identity', trainable = False))
 NNPartOfSpeechModel.add(LSTM(hiddenSize, dropout = lstmDropout, recurrent_dropout = lstmDropout, return_sequences = True))
 NNPartOfSpeechModel.add(LSTM(hiddenSize, dropout = lstmDropout, recurrent_dropout = lstmDropout, return_sequences = True)) 
 NNPartOfSpeechModel.add(LSTM(hiddenSize, dropout = lstmDropout, recurrent_dropout = lstmDropout))
 NNPartOfSpeechModel.add(Dense(partsOfSpeechNumber, activation = 'softmax'))
 print(NNPartOfSpeechModel.summary())
 
-optimizer = Adam(lr = learningRateAdam)
-NNPartOfSpeechModel.compile(loss = 'categorical_crossentropy', optimizer = optimizer, metrics = ['acc'])
+optimizer = Adam(lr = learningRate)
+NNPartOfSpeechModel.compile(loss = 'categorical_crossentropy', optimizer = optimizer, metrics = ['accuracy'])
 
 filePath = r'./' + fileName + '-wap-parts.hdf5'
-checkpoint = ModelCheckpoint(filePath, monitor = 'val_acc', verbose = 1, save_weights_only = True)
+checkpoint = ModelCheckpoint(filePath, monitor = 'val_loss', verbose = 1, save_weights_only = True)
 history = History()
 callbacksList = [checkpoint, history]
 
-NNPartOfSpeechModel.fit(trainXPartOfSpeech, trainYPartOfSpeech, batchSize, epochs = 100, verbose = 2, validation_split = 0.1, callbacks = callbacksList, shuffle = True)
+NNPartOfSpeechModel.fit(trainXPartOfSpeech, trainYPartOfSpeech, batchSize, epochs = 1000, verbose = 2, validation_split = 0.1, callbacks = callbacksList)
 
 def SaveHistory(history, fileName):
     with open(fileName + '_historyWaPParts.txt', 'wb') as f:

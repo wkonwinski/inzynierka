@@ -10,7 +10,7 @@ from keras.layers.embeddings import Embedding
 from keras.layers import Dense
 from keras.models import Sequential
 from keras import backend as kerback
-from keras.optimizers import Adagrad
+from keras.optimizers import Adam
 from keras.callbacks import ModelCheckpoint, History
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
@@ -23,7 +23,7 @@ session.mount('http://', adapter)
 urlHead = r'http://clarin.pelcra.pl/apt_pl/?sentences=["'
 urlTail = r'"]'
 
-fileName = 'Pan_Tadeusz'
+fileName = 'Wesele'
 path = r'../SharedData/'
 modelWord2Vec = gensim.models.KeyedVectors.load_word2vec_format(path + 'nkjp+wiki-forms-all-100-skipg-hs.txt.gz') 
 embeddingDim = 100
@@ -210,13 +210,9 @@ for wordIndex in seqenceOfWordsConvertedToModelIndexes:
                 seqenceOfWordsConvertedToNewIndexes.append(i)
                 break
               
-#test = modelWord2Vec.index2word[309]
-#test2 = newIndexToWordTable[237]
-
-
 ######################## TWORZENIE ZESTAWU TRENINGOWEGO DLA MODELU UCZACEGO SIE SLOW #################
 trainingPairs = []
-seqLen = 15
+seqLen = 10
 for i in range(seqLen, len(seqenceOfWordsConvertedToNewIndexes)):
     trainingPairs.append(seqenceOfWordsConvertedToNewIndexes[i - seqLen:i + 1])
        
@@ -245,10 +241,10 @@ config.gpu_options.allow_growth = True
 kerback.tensorflow_backend.set_session(tf.Session(config = config))
 
 ######################## MODEL UCZACY SIĘ SŁÓW ##################
-hiddenSize = 800
-lstmDropout = 0.5
-learningRate = 0.01
-batchSize = 256 
+hiddenSize = 500
+lstmDropout = 0.2
+learningRate = 0.001
+batchSize = 128 
       
 NNWordOnlyModel = Sequential()
 NNWordOnlyModel.add(Embedding(input_dim = vocabSize, output_dim = embeddingDim, input_length = seqLen, weights = [weightsForWordsInInputText]))
@@ -258,22 +254,22 @@ NNWordOnlyModel.add(LSTM(hiddenSize, dropout = lstmDropout, recurrent_dropout = 
 NNWordOnlyModel.add(Dense(vocabSize, activation = 'softmax'))
 print(NNWordOnlyModel.summary())
 
-optimizer = Adagrad(lr = learningRate)
-NNWordOnlyModel.compile(loss = 'categorical_crossentropy', optimizer = optimizer, metrics = ['acc'])
+optimizer = Adam(lr = learningRate)
+NNWordOnlyModel.compile(loss = 'sparse_categorical_crossentropy', optimizer = optimizer, metrics = ['accuracy'])
 
 filePath = r'./' + fileName + '-words.hdf5'
-checkpoint = ModelCheckpoint(filePath, monitor = 'acc', verbose = 1, save_weights_only = True)
+checkpoint = ModelCheckpoint(filePath, monitor = 'val_loss', verbose = 1, save_weights_only = True)
 history = History()
 callbacksList = [checkpoint, history]
 
-NNWordOnlyModel.fit(trainXWord, trainYWord, batchSize, epochs = 100, verbose = 2, validation_split = 0.1, callbacks = callbacksList)
+NNWordOnlyModel.fit(trainXWord, trainYWord, batchSize, epochs = 1000, verbose = 2, validation_split = 0.1, callbacks = callbacksList)
 
 def SaveHistory(history, fileName):
     with open(fileName + '_historyWordsOnly.txt', 'wb') as f:
         pickle.dump(history.history, f)
 saveHist = SaveHistory(history, fileName)
 
-#kerback.clear_session()
-#del(NNWordOnlyModel)
+kerback.clear_session()
+del(NNWordOnlyModel)
    
     
