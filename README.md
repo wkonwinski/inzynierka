@@ -4,4 +4,4 @@ Dodatkowo, aby umożliwić łatwe dostosowywanie parametrów generowanego tekstu
 
 Nie udostępniam tutaj plików z tekstami źródłowymi oraz plików z wyuczonymi wagami sieci.
 
-Całość pracy inżynierskiej będzie tutaj:
+Całość pracy inżynierskiej: https://drive.google.com/file/d/17KLgkyxJKBZ5rFqY-ItoBr-YGOyxsLG2/view?usp=sharing
